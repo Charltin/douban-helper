@@ -60,6 +60,7 @@ def get_url_data_in_ranking_list(typeId, movie_count, rating, vote_count):
         context = _create_unverified_context()  # 屏蔽ssl证书
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'}
         url = 'https://movie.douban.com/j/chart/top_list?type=' + str(typeId) + '&interval_id=100:90&action=unwatched&start=0&limit=' + str(movie_count)
+        print('url: {}'.format(url))
         req = urllib.request.Request(url=url, headers=headers)
         f = urllib.request.urlopen(req, context=context)
         response = f.read()
@@ -99,7 +100,7 @@ def get_url_data_in_keyWord(key_word):
     chrome_options = Options()
     chrome_options.add_argument('--headless')  # 设置为无头模式，即不显示浏览器
     chrome_options.add_argument('user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"')  # 设置user=agent
-    chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])  # 此步骤很重要，设置为开发者模式，防止被各大网站识别出来使用了Selenium
+    chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])  # 设置为开发者模式，防止被各大网站识别出来使用了Selenium
     chrome_options.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})  # 不加载图片,加快访问速度
 
     load_driver_success = False  # 加载chromedriver驱动是否成功
@@ -171,15 +172,14 @@ def get_url_data_in_keyWord(key_word):
 
                 jsonData.append(movieData)
                 res_list.append(sub_list)
-            print(jsonData)
             with open("jsonData.json", "w") as f:
                 v = json.dumps(jsonData)
                 # print("v has value", v, "and is of type", type(v))
                 f.write(v)
 
 
-            for data in res_list:
-                print(data)
+            # for data in res_list:
+            #     print(data)
 
             browser.quit()  # 关闭浏览器
 

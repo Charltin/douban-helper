@@ -309,6 +309,11 @@ class uiObject:
                         string_actors = "、".join(movie['actors'])
                     else:
                         string_actors = movie['actors']
+                    limit_num = 110
+                    if len(string_actors) > limit_num:
+                        string_actors = string_actors[:limit_num]
+                        actors_list = string_actors.split('、')
+                        string_actors = '、'.join(actors_list[:-2]) + '...'
                     self.label_movie_actor.config(text=string_actors)
                     self.label_movie_rating.config(text=str(movie['rating'][0]) + '分 ' + str(movie['vote_count']) + '人评价')
                     self.label_movie_time.config(text=movie['release_date'])
@@ -546,7 +551,7 @@ class uiObject:
         for subMovieData in jsonMovieData: #对每一种类的电影题材进行操作
             movieList.append(subMovieData['title'])
         C_type["values"] = movieList #初始化
-        C_type.current(9)  # 选择第一个
+        C_type.current(9)  # 默认选择第10个
         C_type.place(x=70, y=0)
         self.C_type = C_type
 
@@ -559,7 +564,7 @@ class uiObject:
         T_count = Entry(labelframe, width=5)
         T_count.delete(0, END)
         T_count.insert(0, '100')
-        T_count.place(x=220, y=10)
+        T_count.place(x=229, y=10)
         self.T_count = T_count
 
         # 评分
@@ -571,7 +576,7 @@ class uiObject:
         T_rating = Entry(labelframe, width=5)
         T_rating.delete(0, END)
         T_rating.insert(0, '8.0')
-        T_rating.place(x=350, y=10)
+        T_rating.place(x=357, y=10)
         self.T_rating = T_rating
 
         # 评价人数
@@ -580,16 +585,16 @@ class uiObject:
         self.L_vote = L_vote
 
         # 文本框
-        T_vote = Entry(labelframe, width=7)
+        T_vote = Entry(labelframe, width=6)
         T_vote.delete(0, END)
         T_vote.insert(0, '100000')
-        T_vote.place(x=480, y=10)
+        T_vote.place(x=488, y=10)
         self.T_vote = T_vote
 
 
 
         # 查询按钮
-        #lambda表示绑定的函数需要带参数，请勿删除lambda，否则会出现异常
+        #lambda表示绑定的函数需要带参数
         #thread_it表示新开启一个线程执行这个函数，防止GUI界面假死无响应
         B_0 = Button(labelframe, text="从排行榜搜索")
         B_0.place(x=560, y=10)
@@ -608,7 +613,7 @@ class uiObject:
 
         # 表格
         columns = ("影片名字", "影片评分", "同类排名", "评价人数")
-        treeview = ttk.Treeview(frame_l, height=10, show="headings", columns=columns)
+        treeview = ttk.Treeview(frame_l, height=8, show="headings", columns=columns)
 
         treeview.column("影片名字", width=210, anchor='center')  # 表示列,不显示
         treeview.column("影片评分", width=210, anchor='center')
@@ -689,13 +694,14 @@ class uiObject:
 
 
         # 框架布局，承载多个控件
-        frame_left_movie_detail = Frame(labelframe_movie_detail, width=160,height=280)
+        frame_left_movie_detail = Frame(labelframe_movie_detail, width=120,height=280)
         frame_left_movie_detail.grid(row=0, column=0)
         self.frame_left_movie_detail = frame_left_movie_detail
 
 
-        frame_right_movie_detail = Frame(labelframe_movie_detail, width=160,height=280)
+        frame_right_movie_detail = Frame(labelframe_movie_detail, width=200, height=280)
         frame_right_movie_detail.grid(row=0, column=1)
+        # frame_right_movie_detail.pack()
         self.frame_right_movie_detail = frame_right_movie_detail
 
 
@@ -707,18 +713,18 @@ class uiObject:
         # IMDB评分
         ft_rating_imdb = font.Font(weight=font.BOLD, size=10)
         label_movie_rating_imdb = Label(frame_left_movie_detail, text="IMDB评分", fg='#7F00FF', font=ft_rating_imdb, anchor=NW)
-        label_movie_rating_imdb.place(x=0, y=250)
+        label_movie_rating_imdb.place(x=0, y=200)
         self.label_movie_rating_imdb = label_movie_rating_imdb
 
         # 查询按钮
         B_0_imdb = Button(frame_left_movie_detail, text="初始化")
-        B_0_imdb.place(x=80, y=250)
+        B_0_imdb.place(x=30, y=230)
         self.B_0_imdb = B_0_imdb
 
 
         #影片名字
         ft = font.Font(size=15, weight=font.BOLD)
-        label_movie_name = Label(frame_right_movie_detail, text="影片名字", fg='#FF0000', font=ft,anchor=NW)
+        label_movie_name = Label(frame_right_movie_detail, text="影片名字", fg='#FF0000', font=ft, anchor=NW)
         label_movie_name.place(x=0, y=0)
         self.label_movie_name = label_movie_name
 
@@ -741,8 +747,8 @@ class uiObject:
         self.label_movie_type = label_movie_type
 
         #影片演员
-        label_movie_actor = Label(frame_right_movie_detail, text="影片演员", wraplength=135, justify = 'left', anchor=NW)
-        label_movie_actor.place(x=0, y=120)
+        label_movie_actor = Label(frame_right_movie_detail, text="影片演员", wraplength=200, justify = 'left', anchor=NW)
+        label_movie_actor.place(x=0, y=112)
         self.label_movie_actor = label_movie_actor
 
         # 电影详情布局结束
@@ -757,7 +763,7 @@ class uiObject:
 
         # 在线播放布局开始
 
-        labelframe_movie_play_online = LabelFrame(root, width=324, height=230, text="在线观看")
+        labelframe_movie_play_online = LabelFrame(root, width=324, height=250, text="在线观看")
         labelframe_movie_play_online.place(x=5, y=305)
         self.labelframe_movie_play_online = labelframe_movie_play_online
 
@@ -771,7 +777,7 @@ class uiObject:
 
         # 表格
         columns_play_online = ("来源名称", "是否免费","播放地址")
-        treeview_play_online = ttk.Treeview(frame_l_play_online, height=10, show="headings", columns=columns_play_online)
+        treeview_play_online = ttk.Treeview(frame_l_play_online, height=9, show="headings", columns=columns_play_online)
         treeview_play_online.column("来源名称", width=90, anchor='center')
         treeview_play_online.column("是否免费", width=80, anchor='center')
         treeview_play_online.column("播放地址", width=120, anchor='center')
@@ -806,7 +812,7 @@ class uiObject:
 
         # 保存到云盘布局开始
 
-        labelframe_movie_save_cloud_disk = LabelFrame(root, width=324, height=230, text="云盘搜索")
+        labelframe_movie_save_cloud_disk = LabelFrame(root, width=324, height=250, text="云盘搜索")
         labelframe_movie_save_cloud_disk.place(x=340, y=305)
         self.labelframe_movie_save_cloud_disk = labelframe_movie_save_cloud_disk
 
@@ -820,7 +826,7 @@ class uiObject:
 
         # 表格
         columns_save_cloud_disk = ("来源名称", "是否有效","播放地址")
-        treeview_save_cloud_disk = ttk.Treeview(frame_l_save_cloud_disk, height=10, show="headings", columns=columns_save_cloud_disk)
+        treeview_save_cloud_disk = ttk.Treeview(frame_l_save_cloud_disk, height=9, show="headings", columns=columns_save_cloud_disk)
         treeview_save_cloud_disk.column("来源名称", width=90, anchor='center')
         treeview_save_cloud_disk.column("是否有效", width=80, anchor='center')
         treeview_save_cloud_disk.column("播放地址", width=120, anchor='center')
@@ -854,7 +860,7 @@ class uiObject:
 
         # BT下载布局开始
 
-        labelframe_movie_bt_download = LabelFrame(root, width=324, height=230, text="影视下载")
+        labelframe_movie_bt_download = LabelFrame(root, width=324, height=250, text="影视下载")
         labelframe_movie_bt_download.place(x=670, y=305)
         self.labelframe_movie_bt_download = labelframe_movie_bt_download
 
@@ -868,7 +874,7 @@ class uiObject:
 
         # 表格
         columns_bt_download = ("来源名称", "是否有效","播放地址")
-        treeview_bt_download = ttk.Treeview(frame_l_bt_download, height=10, show="headings", columns=columns_bt_download)
+        treeview_bt_download = ttk.Treeview(frame_l_bt_download, height=9, show="headings", columns=columns_bt_download)
         treeview_bt_download.column("来源名称", width=90, anchor='center')
         treeview_bt_download.column("是否有效", width=80, anchor='center')
         treeview_bt_download.column("播放地址", width=120, anchor='center')
@@ -899,7 +905,7 @@ class uiObject:
         #项目的一些信息
         ft = font.Font(size=14, weight=font.BOLD)
         project_statement = Label(root, text="1.鼠标双击可打开相应的链接, 2.点击初始化按钮后将显示完整信息", fg='#FF0000', font=ft,anchor=NW)
-        project_statement.place(x=5, y=540)
+        project_statement.place(x=5, y=560)
         self.project_statement = project_statement
 
 
