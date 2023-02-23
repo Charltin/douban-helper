@@ -27,6 +27,7 @@ from tkinter import DISABLED
 from tkinter import NORMAL
 from ttkbootstrap.constants import *
 from re import findall
+from re import S
 from json import loads
 from ssl import _create_unverified_context
 from threading import Thread
@@ -35,6 +36,7 @@ from webbrowser import open
 import urllib
 import os
 import ssl
+import json
 ssl._create_default_https_context = ssl._create_unverified_context #关闭SSL证书验证
 
 
@@ -121,6 +123,7 @@ def get_mid_str(content, startStr, endStr):
     endIndex = content.find(endStr, startIndex)  # 定位到结束字符串，要从起始字符串开始查找
 
     if endIndex >= 0 and endIndex >= startIndex:
+        print('get_mid_str: {}'.format(content[startIndex:endIndex]))
         return content[startIndex:endIndex]
     else:
         return ""
@@ -177,21 +180,27 @@ class uiObject:
                     context = _create_unverified_context()  # 屏蔽ssl证书
                     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
                     req = urllib.request.Request(url=movie['url'], headers=headers)
-                    response = urllib.request.urlopen(req, context=context).read().decode()
-                    # print('response: {}'.format(response))
+                    response = urllib.request.urlopen(req, context=context).read().decode() # douban的页面
+                    req_cupFox = urllib.request.Request(url='https://cupfox.app/s/{}'.format(urllib.parse.quote(movieName)), headers=headers)
+                    cupFox_response = urllib.request.urlopen(req_cupFox, context=context).read().decode()
 
 
-
+                    # 在线观看 start
                     self.clear_tree(self.treeview_play_online)
                     s = response
                     name = findall(r'<a class="playBtn" data-cn="(.*?)" data-impression-track', s)
+                    isVIP = findall(r'<span class="buylink-price"><span>(.*?)</span>', s, S) # S是re.S, 表示可以换行
+                    # print('isVIP: {}'.format(isVIP))
                     down_url = findall(r'data-cn=".*?" href="(.*?)" target=', s)
 
                     res_list = []
                     for i in range(len(name)):
-                        res_list.append([name[i], "限VIP免费", down_url[i]])
+                        isVIP[i] = isVIP[i].replace('\n', '').strip() # 对换行符和空格进行处理
+                        res_list.append([name[i], isVIP[i], down_url[i]])
                     self.add_tree(res_list, self.treeview_play_online)
+                    # 在线观看 end
 
+                    # cloud disk start
                     self.clear_tree(self.treeview_save_cloud_disk)
                     res_list = []
                     res_list.append(["56网盘搜索", "有效", "https://www.56wangpan.com/search/o2kw" + quote(movie['title'])])
@@ -200,57 +209,20 @@ class uiObject:
                     res_list.append(["小白盘", "有效", "https://www.xiaobaipan.com/list-" + quote(movie['title']) + "-1.html" ])
                     res_list.append(["云盘精灵", "有效", "https://www.yunpanjingling.com/search/" + quote(movie['title']) + "?sort=size.desc"])
                     self.add_tree(res_list, self.treeview_save_cloud_disk)
+                    # cloud disk end
 
+                    # download start
                     self.clear_tree(self.treeview_bt_download)
                     res_list = []
-                    res_list.append(['19影视', '有效', 'https://www.19kan.com/vodsearch.html?wd=' + quote(movie['title'])])
-                    res_list.append(['2TU影院', '有效', 'http://www.82tu.cc/search.php?submit=%E6%90%9C+%E7%B4%A2&searchword=' + quote(movie['title'])])
-                    res_list.append(['4K电影', '有效', 'https://www.dygc.org/?s=' + quote(movie['title'])])
-                    res_list.append(['52 Movie', '有效', 'http://www.52movieba.com/search.htm?keyword=' + quote(movie['title'])])
-                    res_list.append(['592美剧', '有效', 'http://www.592meiju.com/search/?wd=' + quote(movie['title'])])
-                    res_list.append(['97电影网', '有效', 'http://www.55xia.com/search?q=' + quote(movie['title'])])
-                    res_list.append(['98TVS', '有效', 'http://www.98tvs.com/?s=' + quote(movie['title'])])
-                    res_list.append(['9去这里', '有效', 'http://9qzl.com/index.php?s=/video/search/wd/' + quote(movie['title'])])
-                    res_list.append(['CK电影', '有效', 'http://www.ck180.net/search.html?q=' + quote(movie['title'])])
-                    res_list.append(['LOL电影', '有效', 'http://www.993dy.com/index.php?m=vod-search&wd=' + quote(movie['title'])])
-                    res_list.append(['MP4Vv', '有效', 'http://www.mp4pa.com/search.php?searchword=' + quote(movie['title'])])
-                    res_list.append(['MP4电影', '有效', 'http://www.domp4.com/search/' + quote(movie['title']) + '-1.html'])
-                    res_list.append(['TL95', '有效', 'http://www.tl95.com/?s=' + quote(movie['title'])])
-                    res_list.append(['比特大雄', '有效', 'https://www.btdx8.com/?s=' + quote(movie['title'])])
-                    res_list.append(['比特影视', '有效', 'https://www.bteye.com/search/' + quote(movie['title'])])
-                    res_list.append(['春晓影视', '有效', 'http://search.chunxiao.tv/?keyword=' + quote(movie['title'])])
-                    res_list.append(['第一电影网', '有效', 'https://www.001d.com/?s=' + quote(movie['title'])])
-                    res_list.append(['电影日志', '有效', 'http://www.dyrizhi.com/search?s=' + quote(movie['title'])])
-                    res_list.append(['高清888', '有效', 'https://www.gaoqing888.com/search?kw=' + quote(movie['title'])])
-                    res_list.append(['高清MP4', '有效', 'http://www.mp4ba.com/index.php?m=vod-search&wd=' + quote(movie['title'])])
-                    res_list.append(['高清电台', '有效', 'https://gaoqing.fm/s.php?q=' + quote(movie['title'])])
-                    res_list.append(['高清控', '有效', 'http://www.gaoqingkong.com/?s=' + quote(movie['title'])])
-                    res_list.append(['界绍部', '有效', 'http://www.jsb456.com/?s=' + quote(movie['title'])])
-                    res_list.append(['看美剧', '有效', 'http://www.kanmeiju.net/index.php?s=/video/search/wd/' + quote(movie['title'])])
-                    res_list.append(['蓝光网', '有效', 'http://www.languang.co/?s=' + quote(movie['title'])])
-                    res_list.append(['老司机电影', '有效', 'http://www.lsjdyw.net/search/?s=' + quote(movie['title'])])
-                    res_list.append(["乐赏电影", '有效', 'http://www.gscq.me/search.htm?keyword=' + quote(movie['title'])])
-                    res_list.append(["美剧汇", '有效', 'http://www.meijuhui.net/search.php?q=' + quote(movie['title'])])
-                    res_list.append(['美剧鸟', '有效', 'http://www.meijuniao.com/index.php?s=vod-search-wd-' + quote(movie['title'])])
-                    res_list.append(['迷你MP4', '有效', 'http://www.minimp4.com/search?q=' + quote(movie['title'])])
-                    res_list.append(['泡饭影视', '有效', 'http://www.chapaofan.com/search/' + quote(movie['title'])])
-                    res_list.append(['片吧', '有效', 'http://so.pianbar.com/search.aspx?q=' + quote(movie['title'])])
-                    res_list.append(['片源网', '有效', 'http://pianyuan.net/search?q=' + quote(movie['title'])])
-                    res_list.append(['飘花资源网', '有效', 'https://www.piaohua.com/plus/search.php?kwtype=0&keyword=' + quote(movie['title'])])
-                    res_list.append(['趣味源', '有效', 'http://quweiyuan.cc/?s=' + quote(movie['title'])])
-                    res_list.append(['人生05', '有效', 'http://www.rs05.com/search.php?s=' + quote(movie['title'])])
-                    res_list.append(['贪玩影视', '有效', 'http://www.tanwanyingshi.com/movie/search?keyword=' + quote(movie['title'])])
-                    res_list.append(['新片网', '有效', 'http://www.91xinpian.com/index.php?m=vod-search&wd=' + quote(movie['title'])])
-                    res_list.append(['迅雷影天堂', '有效', 'https://www.xl720.com/?s=' + quote(movie['title'])])
-                    res_list.append(['迅影网', '有效', 'http://www.xunyingwang.com/search?q=' + quote(movie['title'])])
-                    res_list.append(['一只大榴莲', '有效', 'http://www.llduang.com/?s=' + quote(movie['title'])])
-                    res_list.append(['音范丝', '有效', 'http://www.yinfans.com/?s=' + quote(movie['title'])])
-                    res_list.append(['影海', '有效', 'http://www.yinghub.com/search/list.html?keyword=' + quote(movie['title'])])
-                    res_list.append(['影视看看', '有效', 'http://www.yskk.tv/index.php?m=vod-search&wd=' + quote(movie['title'])])
-                    res_list.append(['云播网', '有效', 'http://www.yunbowang.cn/index.php?m=vod-search&wd=' + quote(movie['title'])])
-                    res_list.append(['中国高清网', '有效', 'http://gaoqing.la/?s=' + quote(movie['title'])])
-                    res_list.append(['最新影视站', '有效', 'http://www.zxysz.com/?s=' + quote(movie['title'])])
+                    s_cupFox = cupFox_response
+                    s_download_data = findall(r'id="__NEXT_DATA__" type="application/json">(.*?)</script>', s_cupFox, S)[0]
+                    download_data = json.loads(str(s_download_data)).get('props').get('pageProps').get('resourceSearchResult').get('resources')
+
+                    for son in download_data:
+                        print(son)
+                        res_list.append([son.get('website'), '有效', son.get('url')])
                     self.add_tree(res_list, self.treeview_bt_download)
+                    # download end
 
 
                     imdb_num = get_mid_str(response, 'IMDb:</span>', '<br>').strip()
