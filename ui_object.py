@@ -179,24 +179,31 @@ class uiObject:
 
                     context = _create_unverified_context()  # 屏蔽ssl证书
                     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
-                    req = urllib.request.Request(url=movie['url'], headers=headers)
-                    response = urllib.request.urlopen(req, context=context).read().decode() # douban的页面
-                    req_cupFox = urllib.request.Request(url='https://cupfox.app/s/{}'.format(urllib.parse.quote(movieName)), headers=headers)
-                    cupFox_response = urllib.request.urlopen(req_cupFox, context=context).read().decode()
-
+                    try:
+                        req = urllib.request.Request(url=movie['url'], headers=headers)
+                        response = urllib.request.urlopen(req, context=context).read().decode() # douban的页面
+                        req_cupFox = urllib.request.Request(url='https://cupfox.app/s/{}'.format(urllib.parse.quote(movieName)), headers=headers)
+                        cupFox_response = urllib.request.urlopen(req_cupFox, context=context).read().decode()
+                    except urllib.error.HTTPError as err:
+                        if err.code == 404:
+                            print(err.code)
+                        else:
+                            pass
 
                     # 在线观看 start
                     self.clear_tree(self.treeview_play_online)
                     s = response
-                    name = findall(r'<a class="playBtn" data-cn="(.*?)" data-impression-track', s)
+                    name = findall(r'<a class="playBtn" data-cn="(.*?)"', s)
                     isVIP = findall(r'<span class="buylink-price"><span>(.*?)</span>', s, S) # S是re.S, 表示可以换行
-                    # print('isVIP: {}'.format(isVIP))
                     down_url = findall(r'data-cn=".*?" href="(.*?)" target=', s)
 
                     res_list = []
                     for i in range(len(name)):
                         isVIP[i] = isVIP[i].replace('\n', '').strip() # 对换行符和空格进行处理
-                        res_list.append([name[i], isVIP[i], down_url[i]])
+                        if down_url == []:
+                            res_list.append([name[i], isVIP[i], '- -'])
+                        else:
+                            res_list.append([name[i], isVIP[i], down_url[i]])
                     self.add_tree(res_list, self.treeview_play_online)
                     # 在线观看 end
 
@@ -245,7 +252,7 @@ class uiObject:
         self.B_0_imdb['state'] = NORMAL
 
     def project_statement_show(self, event):
-        open("https://github.com/shengqiangzhang/examples-of-web-crawlers")
+        open("https://github.com/Charltin/douban-helper")
 
     def project_statement_get_focus(self, event):
         self.project_statement.config(fg="blue", cursor="hand1")
